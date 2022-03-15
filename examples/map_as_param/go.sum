@@ -1,0 +1,16 @@
+github.com/Knetic/go-namedParameterQuery v0.0.0-20150709205813-b7327e472dfd h1:KSbQj+RcWtQeg6ndcvtUMGWNBY/RozpbJlKrAmS0TeY=
+github.com/Knetic/go-namedParameterQuery v0.0.0-20150709205813-b7327e472dfd/go.mod h1:GGnSKvb/jhWZffu3/izcawQDUkwwdMgddYUVxu9aLxs=
+github.com/NicklasWallgren/sqlTemplate v0.0.0-20220320171852-fd848a1d9ec6 h1:8izNw7RcUdUY4aZ1/liiZbvhaBBrhZoVRoI1wa4aSco=
+github.com/NicklasWallgren/sqlTemplate v0.0.0-20220320171852-fd848a1d9ec6/go.mod h1:U1XyWAih8IF5OcWuZTU+tWtxWS1RdSDPOtzUMk9UiNU=
+github.com/NicklasWallgren/sqlTemplate v0.0.0-20220320172825-9b1aaa2d5549 h1:Yx1X6pPuwht9SkUE1QA180booZ9w9QyBhwkzjjjeYqc=
+github.com/NicklasWallgren/sqlTemplate v0.0.0-20220320172825-9b1aaa2d5549/go.mod h1:U1XyWAih8IF5OcWuZTU+tWtxWS1RdSDPOtzUMk9UiNU=
+github.com/NicklasWallgren/sqlTemplate v0.0.0-20220320173326-aa3344d6c9f3 h1:eXxQ3fg4gngvUfHzTu38SepRafWD9NMZCY+IOE+8Mz8=
+github.com/NicklasWallgren/sqlTemplate v0.0.0-20220320173326-aa3344d6c9f3/go.mod h1:U1XyWAih8IF5OcWuZTU+tWtxWS1RdSDPOtzUMk9UiNU=
+github.com/NicklasWallgren/sqlTemplate v0.0.0-20220320184116-065fb69e1b9d h1:OjqQEzAVpucu7ny0iNHPbPjE/aubnRsRO2/QlDzOBTo=
+github.com/NicklasWallgren/sqlTemplate v0.0.0-20220320184116-065fb69e1b9d/go.mod h1:g1ODuLET3EOqfzKSz0P3PDFSaEmO1oTkArSC7KwEbvQ=
+github.com/NicklasWallgren/sqlTemplate v0.0.0-20220327151705-ac534c5a6111 h1:PvDyTEtAqeeigzwNLw+5QQN0kAbc1aWmdPXyyxoZDVM=
+github.com/NicklasWallgren/sqlTemplate v0.0.0-20220327151705-ac534c5a6111/go.mod h1:U1XyWAih8IF5OcWuZTU+tWtxWS1RdSDPOtzUMk9UiNU=
+github.com/NicklasWallgren/sqlTemplate v0.0.0-20220327152152-5d6a570d7820 h1:/T0nc0YjDKbB4yf/4AE8yUyEFvvl6BnK6jwD36yPsdA=
+github.com/NicklasWallgren/sqlTemplate v0.0.0-20220327152152-5d6a570d7820/go.mod h1:U1XyWAih8IF5OcWuZTU+tWtxWS1RdSDPOtzUMk9UiNU=
+github.com/NicklasWallgren/sqlTemplate v0.0.0-20220329151908-7ad5244e7f1f h1:lFyJjiGYMzJ7wQfjFmyqVzQqikYkY0IMoKeUOOmtwmU=
+github.com/NicklasWallgren/sqlTemplate v0.0.0-20220329151908-7ad5244e7f1f/go.mod h1:Bewc5fq/pOqSF9ZPyaMJ+v4rgQ1UDMxBymZ6QsV5KQA=

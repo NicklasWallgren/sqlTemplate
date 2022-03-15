@@ -1,0 +1,6 @@
+{{define "findById"}}
+    SELECT *
+    FROM users
+    WHERE id={{bind .Id}}
+    {{if .Order}}ORDER BY {{.Order}}{{end}}
+{{end}}

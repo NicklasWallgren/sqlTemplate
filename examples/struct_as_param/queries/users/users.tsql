@@ -1,0 +1,6 @@
+{{define "findByName"}}
+    SELECT *
+    FROM users
+    WHERE name={{bind .Name}}
+    {{if ne .Order ""}}ORDER BY {{.Order}}{{end}}
+{{end}}
