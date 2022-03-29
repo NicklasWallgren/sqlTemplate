@@ -60,7 +60,7 @@ fmt.Printf("query %v\n", tmpl.GetQuery())
 fmt.Printf("query parameters %v\n", tmpl.GetParams())
 ```
 
-```
+```sql
 -- File ./queries/users/users.tsql
 {{define "findById"}}
     SELECT *
