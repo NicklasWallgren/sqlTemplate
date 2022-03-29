@@ -10,7 +10,7 @@ A simple template engine for writing dynamic SQL queries.
 
 Sometimes it can be hard to write comprehensible SQL queries with tools like SQL builders ([squirrel](https://github.com/Masterminds/squirrel)
 or [dbr](https://github.com/gocraft/dbr)), specially dynamic queries with optional statements and joins.
-It's hard to see the overall cohesive structure of the queries, and the primary goal.
+It can be hard to see the overall cohesive structure of the queries, and the primary goal.
 
 The main motivation of this library is to separate the SQL queries from the Go code, and to improve the readability of complex dynamic queries.
 
@@ -26,12 +26,12 @@ go get github.com/NicklasWallgren/sqlTemplate
 We support the two major Go versions, which are 1.17 and 1.18 at the moment.
 
 # Features and benefits
-- Separates SQL och Go code.
+- Separates SQL and Go code.
 - Keeps the templated query as close as possible to the actual SQL query.
 - Extensible template language with support for https://github.com/Masterminds/sprig
 - No third party dependencies
 
-# SDK
+# API
 ```go
 // Parse parses a sql template and returns the 'QueryTemplate'
 Parse(namespace string, templateName string) (QueryTemplate, error)
