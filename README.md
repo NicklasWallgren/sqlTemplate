@@ -53,8 +53,8 @@ Register(namespace string, templateRoot string, extensions string) error
 sqlt := sqlTemplate.NewQueryTemplateEngine()
 sqlt.Register("users", "queries/users", ".tsql");
 
-criteria := map[string]interface{}{"Id": "1", "Order": "id"}
-tmpl, _ := sqlt.ParseWithValuesFromMap("users", "findById", criteria)
+criteria := map[string]interface{}{"Name": "Bill", "Order": "id"}
+tmpl, _ := sqlt.ParseWithValuesFromMap("users", "findByName", criteria)
 
 fmt.Printf("query %v\n", tmpl.GetQuery())
 fmt.Printf("query parameters %v\n", tmpl.GetParams())
@@ -62,10 +62,10 @@ fmt.Printf("query parameters %v\n", tmpl.GetParams())
 
 ```sql
 -- File ./queries/users/users.tsql
-{{define "findById"}}
+{{define "findByName"}}
     SELECT *
     FROM users
-    WHERE id={{bind .Id}}
+    WHERE name={{bind .Name}}
     {{if .Order}}ORDER BY {{.Order}}{{end}}
 {{end}}
 ```
