@@ -22,6 +22,7 @@ type bindings struct {
 // bind stores the given `value` and returns a placeholder parameter.
 func (b *bindings) bind(value interface{}) string {
 	b.values = append(b.values, value)
+
 	return "?"
 }
 
@@ -45,7 +46,7 @@ func (r *repository) addFunctions(functions template.FuncMap) {
 	}
 }
 
-// add walks a filesystem and parses the corresponding templates
+// add walks a filesystem and parses the corresponding templates.
 func (r *repository) add(namespace string, filesystem fs.FS, extension string) (err error) {
 	filesInFilesystem, err := getFilesInFilesystem(filesystem, extension)
 	if err != nil {
@@ -82,6 +83,7 @@ func (r *repository) parse(namespace string, name string, data interface{}) (str
 
 	// Apply the bind function which stores the values for any placeholder parameters
 	values := &bindings{values: []interface{}{}}
+
 	clonedTmpl.Funcs(template.FuncMap{"bind": values.bind})
 
 	var b bytes.Buffer
@@ -92,7 +94,7 @@ func (r *repository) parse(namespace string, name string, data interface{}) (str
 	return b.String(), values.values, nil
 }
 
-// bind is a dummy function which is never used while executing a template
+// bind is a dummy function which is never used while executing a template.
 func bind(param interface{}) string {
 	return "?"
 }
@@ -108,7 +110,6 @@ func getFilesInFilesystem(filesystem fs.FS, extension string) ([]string, error) 
 
 		return nil
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve files in directory %w", err)
 	}

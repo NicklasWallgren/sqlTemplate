@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"fmt"
+
 	sqlTemplate "github.com/NicklasWallgren/sqlTemplate/pkg"
 )
 

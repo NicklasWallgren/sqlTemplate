@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	sqlTemplate "github.com/NicklasWallgren/sqlTemplate/pkg"
 	"os"
+
+	sqlTemplate "github.com/NicklasWallgren/sqlTemplate/pkg"
 )
 
 func main() {

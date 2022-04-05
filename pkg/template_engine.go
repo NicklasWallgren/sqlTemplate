@@ -30,7 +30,6 @@ type QueryTemplate interface {
 type Option func(*queryTemplateEngine)
 
 type queryTemplateEngine struct {
-	data       interface{}
 	repository *repository
 }
 
