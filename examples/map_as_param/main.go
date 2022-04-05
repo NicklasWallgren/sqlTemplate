@@ -2,13 +2,17 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	sqlTemplate "github.com/NicklasWallgren/sqlTemplate/pkg"
 )
 
 func main() {
+	wd, _ := os.Getwd()
+	fs := os.DirFS(wd + "/examples/map_as_param/queries/users")
+
 	sqlT := sqlTemplate.NewQueryTemplateEngine()
-	if err := sqlT.Register("users", "queries/users", ".tsql"); err != nil {
+	if err := sqlT.Register("users", fs, ".tsql"); err != nil {
 		panic(err)
 	}
 

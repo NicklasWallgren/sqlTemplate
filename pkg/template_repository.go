@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"os"
+	"io/fs"
 	"path/filepath"
 	"text/template"
 )
@@ -22,6 +22,7 @@ type bindings struct {
 // bind stores the given `value` and returns a placeholder parameter.
 func (b *bindings) bind(value interface{}) string {
 	b.values = append(b.values, value)
+
 	return "?"
 }
 
@@ -45,17 +46,17 @@ func (r *repository) addFunctions(functions template.FuncMap) {
 	}
 }
 
-// add adds a root directory to the repository, recursively.
-func (r *repository) add(namespace string, root string, extension string) (err error) {
-	filesInDirectory, err := getFilesInDirectoryTree(root, extension)
+// add walks a filesystem and parses the corresponding templates.
+func (r *repository) add(namespace string, filesystem fs.FS, extension string) (err error) {
+	filesInFilesystem, err := getFilesInFilesystem(filesystem, extension)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve files in directory %w", err)
 	}
 
 	rootTemplate := template.New(namespace).Funcs(r.functions)
 
-	for _, filename := range filesInDirectory {
-		parsedTemplate, err := rootTemplate.ParseFiles(filename)
+	for _, filename := range filesInFilesystem {
+		parsedTemplate, err := rootTemplate.ParseFS(filesystem, filename)
 		if err != nil {
 			return fmt.Errorf("unable to parse file %s %w", filename, err)
 		}
@@ -82,6 +83,7 @@ func (r *repository) parse(namespace string, name string, data interface{}) (str
 
 	// Apply the bind function which stores the values for any placeholder parameters
 	values := &bindings{values: []interface{}{}}
+
 	clonedTmpl.Funcs(template.FuncMap{"bind": values.bind})
 
 	var b bytes.Buffer
@@ -92,23 +94,22 @@ func (r *repository) parse(namespace string, name string, data interface{}) (str
 	return b.String(), values.values, nil
 }
 
-// bind is a dummy function which is never used while executing a template
+// bind is a dummy function which is never used while executing a template.
 func bind(param interface{}) string {
 	return "?"
 }
 
-// getFilesInDirectoryTree walks the directory tree and returns a slice of files with the given extension.
-func getFilesInDirectoryTree(directory string, extension string) ([]string, error) {
+// getFilesInFilesystem walks the directory tree and returns a slice of files with the given extension.
+func getFilesInFilesystem(filesystem fs.FS, extension string) ([]string, error) {
 	var files []string
 
-	err := filepath.Walk(directory, func(path string, fileInfo os.FileInfo, err error) error {
+	err := fs.WalkDir(filesystem, ".", func(path string, d fs.DirEntry, err error) error {
 		if filepath.Ext(path) == extension {
 			files = append(files, path)
 		}
 
 		return nil
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve files in directory %w", err)
 	}
