@@ -43,8 +43,8 @@ ParseWithValuesFromMap(namespace string, templateName string, parameters map[str
 // ParseWithValuesFromStruct parses a sql template with values from a struct and returns the 'QueryTemplate'
 ParseWithValuesFromStruct(namespace string, templateName string, parameters interface{}) (QueryTemplate, error)
 
-// Register registers a new namespace by template root and extension
-Register(namespace string, templateRoot string, extensions string) error
+// Register registers a new namespace by template filesystem and extension
+Register(namespace string, filesystem fs.FS, extensions string) error
 ```
 
 # Examples 
