@@ -30,6 +30,7 @@ We support the two major Go versions, which are 1.17 and 1.18 at the moment.
 - Keeps the templated query as close as possible to the actual SQL query.
 - Extensible template language with support for https://github.com/Masterminds/sprig
 - No third party dependencies
+- Support for embedded filesystem
 
 # API
 ```go
@@ -50,8 +51,11 @@ Register(namespace string, templateRoot string, extensions string) error
 
 ## Register a namespace and parse a template
 ```go
+//go:embed queries/users/*.tsql
+var fs embed.FS
+
 sqlt := sqlTemplate.NewQueryTemplateEngine()
-sqlt.Register("users", "queries/users", ".tsql");
+sqlt.Register("users", fs, ".tsql");
 
 criteria := map[string]interface{}{"Name": "Bill", "Order": "id"}
 tmpl, _ := sqlt.ParseWithValuesFromMap("users", "findByName", criteria)

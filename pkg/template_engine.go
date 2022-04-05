@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"fmt"
+	"io/fs"
 	"text/template"
 )
 
@@ -13,8 +14,8 @@ type QueryTemplateEngine interface {
 	ParseWithValuesFromMap(namespace string, templateName string, parameters map[string]interface{}) (QueryTemplate, error)
 	// ParseWithValuesFromStruct parses a sql template with values from a struct and returns the 'QueryTemplate'
 	ParseWithValuesFromStruct(namespace string, templateName string, parameters interface{}) (QueryTemplate, error)
-	// Register registers a new namespace by template root and extension
-	Register(namespace string, templateRoot string, extensions string) error
+	// Register registers a new namespace by template filesystem and extension
+	Register(namespace string, filesystem fs.FS, extensions string) error
 }
 
 // QueryTemplate is the interface implemented by types that holds the parsed template sql query context.
@@ -66,8 +67,8 @@ func NewQueryTemplateEngine(options ...Option) QueryTemplateEngine {
 	return templateEngine
 }
 
-func (q queryTemplateEngine) Register(namespace string, templateRoot string, ext string) error {
-	err := q.repository.add(namespace, templateRoot, ext)
+func (q queryTemplateEngine) Register(namespace string, filesystem fs.FS, ext string) error {
+	err := q.repository.add(namespace, filesystem, ext)
 	if err != nil {
 		return fmt.Errorf("could not register the namespace %s %w", namespace, err)
 	}
