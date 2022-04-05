@@ -14,3 +14,5 @@ github.com/NicklasWallgren/sqlTemplate v0.0.0-20220327152152-5d6a570d7820 h1:/T0
 github.com/NicklasWallgren/sqlTemplate v0.0.0-20220327152152-5d6a570d7820/go.mod h1:U1XyWAih8IF5OcWuZTU+tWtxWS1RdSDPOtzUMk9UiNU=
 github.com/NicklasWallgren/sqlTemplate v0.0.0-20220329151908-7ad5244e7f1f h1:lFyJjiGYMzJ7wQfjFmyqVzQqikYkY0IMoKeUOOmtwmU=
 github.com/NicklasWallgren/sqlTemplate v0.0.0-20220329151908-7ad5244e7f1f/go.mod h1:Bewc5fq/pOqSF9ZPyaMJ+v4rgQ1UDMxBymZ6QsV5KQA=
+github.com/NicklasWallgren/sqlTemplate v0.10.0 h1:Fho25zGkr9js9wLGCxnN/rcSTk8wQm639d4OVjx24aw=
+github.com/NicklasWallgren/sqlTemplate v0.10.0/go.mod h1:3G/ZiyeSIrZp3kzK+tyTcw7OIVIZ3YaIKDLMMAypQMw=
