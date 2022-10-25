@@ -23,7 +23,7 @@ go get github.com/NicklasWallgren/sqlTemplate
 ```
 
 # Supported versions
-We support the two major Go versions, which are 1.17 and 1.18 at the moment.
+We support the latest major Go version, which are 1.19 at the moment.
 
 # Features and benefits
 - Separates SQL and Go code.
@@ -60,6 +60,8 @@ sqlt.Register("users", fs, ".tsql");
 criteria := map[string]interface{}{"Name": "Bill", "Order": "id"}
 tmpl, _ := sqlt.ParseWithValuesFromMap("users", "findByName", criteria)
 
+sql.QueryRowContext(context.Background(), tmpl.GetQuery(), tmpl.GetParams())
+
 fmt.Printf("query %v\n", tmpl.GetQuery())
 fmt.Printf("query parameters %v\n", tmpl.GetParams())
 ```
@@ -81,7 +83,7 @@ go test -v -race $(go list ./... | grep -v vendor)
 
 ### Code Guide
 
-We use GitHub Actions to make sure the codebase is consistent (`golangci-lint run`) and continuously tested (`go test -v -race $(go list ./... | grep -v vendor)`). We try to keep comments at a maximum of 120 characters of length and code at 120.
+We use GitHub Actions to make sure the codebase is consistent (`golangci-lint run`) and continuously tested (`go test -v -race ./pkg`). We try to keep comments at a maximum of 120 characters of length and code at 120.
 
 ## Contributing
 

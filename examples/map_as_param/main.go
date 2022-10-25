@@ -16,7 +16,7 @@ func main() {
 		panic(err)
 	}
 
-	criteria := map[string]interface{}{"Id": "1", "Order": "id"}
+	criteria := map[string]interface{}{"Id": 1, "Order": "id"}
 
 	tmpl, err := sqlT.ParseWithValuesFromMap("users", "findById", criteria)
 	if err != nil {

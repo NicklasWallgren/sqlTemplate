@@ -47,7 +47,7 @@ func (r *repository) addFunctions(functions template.FuncMap) {
 }
 
 // add walks a filesystem and parses the corresponding templates.
-func (r *repository) add(namespace string, filesystem fs.FS, extension string) (err error) {
+func (r *repository) add(namespace string, filesystem fs.FS, extension string) error {
 	filesInFilesystem, err := getFilesInFilesystem(filesystem, extension)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve files in directory %w", err)

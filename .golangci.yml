@@ -19,7 +19,6 @@ linters:
     - forbidigo
     - forcetypeassert
     - funlen
-    - gci
     - gochecknoglobals
     - gochecknoinits
     - gocognit
@@ -51,7 +50,6 @@ linters:
     - nilnil
     - nlreturn
     - noctx
-    - paralleltest
     - prealloc
     - predeclared
     - promlinter
@@ -60,7 +58,6 @@ linters:
     - sqlclosecheck
     - staticcheck
     - structcheck
-    - stylecheck
     - tagliatelle
     - tenv
     - testpackage
@@ -77,32 +74,6 @@ linters:
     - wrapcheck
     - wsl
 
-  disable:
-#    - interfacer
-    - golint
-    - scopelint
-    - maligned
-    - lll
-    - nolintlint
-    - ireturn
-    - goerr113
-
-  presets:
-    - bugs
-    - comment
-    - complexity
-    - error
-    - format
-    - import
-    - metalinter
-    - module
-    - performance
-    - sql
-    - style
-    - test
-    - unused
-
-
 linters-settings:
   check-shadowing: true
   enable-all: true
@@ -114,5 +85,5 @@ issues:
   exclude-use-default: false
 
 run:
-  go: 1.17
+  go: 1.19
 
