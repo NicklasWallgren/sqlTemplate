@@ -14,16 +14,65 @@ type templateEntry struct {
 	fullPath string
 }
 
-// bindings stores the values of any placeholder parameter in the query.
-type bindings struct {
-	values []interface{}
+type placeholderFunc func(value any, index int) string
+
+func defaultPlaceholderFunc(_ any, _ int) string { return "?" }
+
+type bindingEngine interface {
+	// StoreValue stores the given `value` and return the index order of
+	// the stored value.
+	storeValue(any) int
+	// GetValues get the stored values.
+	getValues() []any
+	// new returns an new instance.
+	new() bindingEngine
+	// SetPlaceholderFunc allows to set custom placeholderFunc.
+	SetPlaceholderFunc(placeholderFunc)
+	// getPlaceholderFunc returns the placeholder function.
+	getPlaceholderFunc() placeholderFunc
 }
 
-// bind stores the given `value` and returns a placeholder parameter.
-func (b *bindings) bind(value interface{}) string {
-	b.values = append(b.values, value)
+// DefaultBindingEngine is a base engine to handle bindings (placeholder "?" for MySQL-like dbe).
+// It can be oveload to provide other type if bindings (placeholder "$i" for PostgreSQL-like dbe).
+type DefaultBindingEngine struct {
+	values          []any
+	index           int
+	placeholderFunc placeholderFunc
+}
 
-	return "?"
+func (b *DefaultBindingEngine) new() bindingEngine {
+	newBE := NewBindingEngine()
+	newBE.SetPlaceholderFunc(b.placeholderFunc)
+
+	return newBE
+}
+
+func (b *DefaultBindingEngine) getPlaceholderFunc() placeholderFunc {
+	if b.placeholderFunc == nil {
+		return defaultPlaceholderFunc
+	}
+
+	return b.placeholderFunc
+}
+
+// SetPlaceholderFunc allows to set custom placeholder function.
+func (b *DefaultBindingEngine) SetPlaceholderFunc(placeholderfunc placeholderFunc) {
+	b.placeholderFunc = placeholderfunc
+}
+
+func (b *DefaultBindingEngine) storeValue(value any) int {
+	b.values = append(b.values, value)
+	b.index++
+
+	return b.index - 1
+}
+
+func (b *DefaultBindingEngine) getValues() []any {
+	return b.values
+}
+
+func NewBindingEngine() bindingEngine {
+	return &DefaultBindingEngine{values: []any{}, index: 0, placeholderFunc: defaultPlaceholderFunc}
 }
 
 // repository stores SQL templates.
@@ -68,34 +117,42 @@ func (r *repository) add(namespace string, filesystem fs.FS, extension string) e
 }
 
 // parse executes the template and returns the resulting SQL or an error.
-func (r *repository) parse(namespace string, name string, data interface{}) (string, []interface{}, error) {
+func (r *repository) parse(namespace string, name string, data interface{}, bEngine bindingEngine) (string, []interface{}, error) {
 	entry, ok := r.templates[namespace]
 	if !ok {
 		return "", nil, errors.New("unable to locate namespace " + namespace)
 	}
 
 	// We clone the template to prevent simultaneous mutation of the template.FuncMap
-	// otherwise the bind function might be replaced during execution of a template
+	// otherwise the binds functions might be replaced during execution of a template
 	clonedTmpl, err := entry.template.Clone()
 	if err != nil {
 		return "", nil, fmt.Errorf("unable to parse template %w", err)
 	}
 
 	// Apply the bind function which stores the values for any placeholder parameters
-	values := &bindings{values: []interface{}{}}
+	if bEngine == nil {
+		bEngine = &DefaultBindingEngine{values: []any{}, index: 0, placeholderFunc: defaultPlaceholderFunc}
+	} else {
+		bEngine = bEngine.new()
+	}
 
-	clonedTmpl.Funcs(template.FuncMap{"bind": values.bind})
+	clonedTmpl.Funcs(template.FuncMap{"bind": func(value any) string {
+		index := bEngine.storeValue(value)
+
+		return bEngine.getPlaceholderFunc()(value, index)
+	}})
 
 	var b bytes.Buffer
 	if err := clonedTmpl.ExecuteTemplate(&b, name, data); err != nil {
 		return "", nil, fmt.Errorf("unable to execute template %w", err)
 	}
 
-	return b.String(), values.values, nil
+	return b.String(), bEngine.getValues(), nil
 }
 
 // bind is a dummy function which is never used while executing a template.
-func bind(param interface{}) string {
+func bind(_ interface{}) string {
 	return "?"
 }
 

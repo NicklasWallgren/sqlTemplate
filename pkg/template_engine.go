@@ -30,7 +30,8 @@ type QueryTemplate interface {
 type Option func(*queryTemplateEngine)
 
 type queryTemplateEngine struct {
-	repository *repository
+	repository    *repository
+	bindingEngine bindingEngine
 }
 
 type queryTemplate struct {
@@ -54,9 +55,29 @@ func WithTemplateFunctions(funcMap template.FuncMap) Option {
 	}
 }
 
+// WithBindingEngine creates an Option func to set custom binding engine.
+// nolint:deadcode
+func WithBindingEngine(bEngine bindingEngine) Option {
+	return func(queryTypeEngine *queryTemplateEngine) {
+		queryTypeEngine.bindingEngine = bEngine
+	}
+}
+
+// WithPlaceholderFunc creates an Option func to set custom placeholder function.
+// nolint:deadcode
+func WithPlaceholderFunc(placeholderfunc placeholderFunc) Option {
+	return func(queryTypeEngine *queryTemplateEngine) {
+		if queryTypeEngine.bindingEngine == nil {
+			queryTypeEngine.bindingEngine = NewBindingEngine()
+		}
+
+		queryTypeEngine.bindingEngine.SetPlaceholderFunc(placeholderfunc)
+	}
+}
+
 // NewQueryTemplateEngine returns a new instance of 'QueryTemplateEngine'.
 func NewQueryTemplateEngine(options ...Option) QueryTemplateEngine {
-	templateEngine := &queryTemplateEngine{repository: newRepository()}
+	templateEngine := &queryTemplateEngine{repository: newRepository(), bindingEngine: nil}
 
 	// Apply options if there are any, can overwrite default
 	for _, option := range options {
@@ -76,7 +97,7 @@ func (q queryTemplateEngine) Register(namespace string, filesystem fs.FS, ext st
 }
 
 func (q queryTemplateEngine) Parse(namespace string, templateName string) (QueryTemplate, error) {
-	sqlQuery, bindings, err := q.repository.parse(namespace, templateName, nil)
+	sqlQuery, bindings, err := q.repository.parse(namespace, templateName, nil, q.bindingEngine)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse %s for namespace %s %w", templateName, namespace, err)
 	}
@@ -85,7 +106,7 @@ func (q queryTemplateEngine) Parse(namespace string, templateName string) (Query
 }
 
 func (q queryTemplateEngine) ParseWithValuesFromMap(namespace string, templateName string, parameters map[string]interface{}) (QueryTemplate, error) {
-	sqlQuery, bindings, err := q.repository.parse(namespace, templateName, parameters)
+	sqlQuery, bindings, err := q.repository.parse(namespace, templateName, parameters, q.bindingEngine)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse %s for namespace %s %w", templateName, namespace, err)
 	}
@@ -94,7 +115,7 @@ func (q queryTemplateEngine) ParseWithValuesFromMap(namespace string, templateNa
 }
 
 func (q queryTemplateEngine) ParseWithValuesFromStruct(namespace string, templateName string, parameters interface{}) (QueryTemplate, error) {
-	sqlQuery, bindings, err := q.repository.parse(namespace, templateName, parameters)
+	sqlQuery, bindings, err := q.repository.parse(namespace, templateName, parameters, q.bindingEngine)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse %s for namespace %s %w", templateName, namespace, err)
 	}

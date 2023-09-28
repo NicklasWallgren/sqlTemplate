@@ -5,6 +5,15 @@
     {{if .Order}}ORDER BY {{.Order}}{{end}}
 {{end}}
 
+{{define "multipleBinds"}}
+SELECT *
+FROM users
+WHERE TRUE
+  AND a={{bind .a}}
+  AND b={{bind .b}}
+  AND c={{bind .c}}
+{{end}}
+
 {{define "findUsers"}}
     SELECT *
     FROM users
