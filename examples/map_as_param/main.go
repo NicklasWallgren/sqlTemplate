@@ -11,7 +11,7 @@ func main() {
 	wd, _ := os.Getwd()
 	fs := os.DirFS(wd + "/examples/map_as_param/queries/users")
 
-	sqlT := sqlTemplate.NewQueryTemplateEngine()
+	sqlT := sqlTemplate.NewTemplateEngine()
 	if err := sqlT.Register("users", fs, ".tsql"); err != nil {
 		panic(err)
 	}

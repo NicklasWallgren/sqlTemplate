@@ -13,7 +13,7 @@ func main() {
 
 	pgPlaceholder := func(_ any, index int) string { return fmt.Sprintf("$%d", index+1) }
 
-	sqlT := sqlTemplate.NewQueryTemplateEngine(sqlTemplate.WithPlaceholderFunc(pgPlaceholder))
+	sqlT := sqlTemplate.NewTemplateEngine(sqlTemplate.WithPlaceholderFunc(pgPlaceholder))
 	if err := sqlT.Register("users", fs, ".tsql"); err != nil {
 		panic(err)
 	}
