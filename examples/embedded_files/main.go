@@ -11,7 +11,7 @@ import (
 var fs embed.FS
 
 func main() {
-	sqlT := sqlTemplate.NewQueryTemplateEngine()
+	sqlT := sqlTemplate.NewTemplateEngine()
 	if err := sqlT.Register("users", fs, ".tsql"); err != nil {
 		panic(err)
 	}

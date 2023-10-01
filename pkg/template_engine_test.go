@@ -3,8 +3,10 @@ package pkg_test
 import (
 	"embed"
 	"fmt"
+	"math/rand"
 	"testing"
 	"text/template"
+	"time"
 
 	"github.com/NicklasWallgren/sqlTemplate/pkg"
 
@@ -15,26 +17,26 @@ import (
 //go:embed testdata/*.tsql
 var fs embed.FS // nolint: varnamelen
 
-func TestNewQueryTemplateEngine(_ *testing.T) {
-	pkg.NewQueryTemplateEngine()
+func TestNewTemplateEngine(_ *testing.T) {
+	pkg.NewTemplateEngine()
 }
 
-func TestNewQueryTemplateEngine_WithTemplateFunctions(t *testing.T) {
-	if sqlT := pkg.NewQueryTemplateEngine(pkg.WithTemplateFunctions(template.FuncMap{})); sqlT == nil {
+func TestNewTemplateEngine_WithTemplateFunctions(t *testing.T) {
+	if sqlT := pkg.NewTemplateEngine(pkg.WithTemplateFunctions(template.FuncMap{})); sqlT == nil {
 		t.Fatal()
 	}
 }
 
-func TestQueryTemplateEngine_Register(t *testing.T) {
-	sqlT := pkg.NewQueryTemplateEngine(pkg.WithTemplateFunctions(template.FuncMap{}))
+func TestTemplateEngine_Register(t *testing.T) {
+	sqlT := pkg.NewTemplateEngine(pkg.WithTemplateFunctions(template.FuncMap{}))
 
 	if err := sqlT.Register("users", fs, ".tsql"); err != nil {
 		t.Fatal()
 	}
 }
 
-func TestQueryTemplateEngine_Parse(t *testing.T) {
-	sqlT := pkg.NewQueryTemplateEngine(pkg.WithTemplateFunctions(template.FuncMap{}))
+func TestTemplateEngine_Parse(t *testing.T) {
+	sqlT := pkg.NewTemplateEngine(pkg.WithTemplateFunctions(template.FuncMap{}))
 
 	if err := sqlT.Register("users", fs, ".tsql"); err != nil {
 		t.Fatal()
@@ -46,8 +48,8 @@ func TestQueryTemplateEngine_Parse(t *testing.T) {
 	assert.Equal(t, []any{}, template.GetParams())
 }
 
-func TestQueryTemplateEngine_ParseWithValuesFromMap(t *testing.T) {
-	sqlT := pkg.NewQueryTemplateEngine(pkg.WithTemplateFunctions(template.FuncMap{}))
+func TestTemplateEngine_ParseWithValuesFromMap(t *testing.T) {
+	sqlT := pkg.NewTemplateEngine(pkg.WithTemplateFunctions(template.FuncMap{}))
 
 	if err := sqlT.Register("users", fs, ".tsql"); err != nil {
 		t.Fatal()
@@ -61,8 +63,8 @@ func TestQueryTemplateEngine_ParseWithValuesFromMap(t *testing.T) {
 	assert.Equal(t, []any{1}, template.GetParams())
 }
 
-func TestQueryTemplateEngine_ParseWithValuesFromStruct(t *testing.T) {
-	sqlT := pkg.NewQueryTemplateEngine(pkg.WithTemplateFunctions(template.FuncMap{}))
+func TestTemplateEngine_ParseWithValuesFromStruct(t *testing.T) {
+	sqlT := pkg.NewTemplateEngine(pkg.WithTemplateFunctions(template.FuncMap{}))
 
 	if err := sqlT.Register("users", fs, ".tsql"); err != nil {
 		t.Fatal()
@@ -81,8 +83,15 @@ func TestQueryTemplateEngine_ParseWithValuesFromStruct(t *testing.T) {
 	assert.Equal(t, []any{1}, template.GetParams())
 }
 
-func getExtendedCriteria() map[string]any {
-	return map[string]interface{}{"a": "a", "b": "b", "c": "c"}
+func getExtendedCriteria(i int64) map[string]any {
+	myRand := rand.New(rand.NewSource(i + time.Now().UnixNano()))
+	letters := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	nbLetters := len(letters)
+	aVal := letters[myRand.Intn(nbLetters)]
+	bVal := letters[myRand.Intn(nbLetters)]
+	cVal := letters[myRand.Intn(nbLetters)]
+
+	return map[string]interface{}{"a": aVal, "b": bVal, "c": cVal}
 }
 
 func getExpectedExtendedQuery(isPgBind bool) string {
@@ -106,58 +115,113 @@ WHERE TRUE
 	return expected
 }
 
-func testExtendedParams(t *testing.T, params []any) {
+func testExtendedParams(t *testing.T, actual []any, expected map[string]any) {
 	t.Helper()
-	assert.Equal(t, 3, len(params), "wrong parameters length")
-	assert.Equal(t, "a", params[0], "parameter does not match")
-	assert.Equal(t, "b", params[1], "parameter does not match")
-	assert.Equal(t, "c", params[2], "parameter does not match")
+	assert.Equal(t, 3, len(actual), "wrong parameters length")
+	assert.Equal(t, expected["a"], actual[0], "parameter does not match")
+	assert.Equal(t, expected["b"], actual[1], "parameter does not match")
+	assert.Equal(t, expected["c"], actual[2], "parameter does not match")
 }
 
-func TestQueryTemplateEngine_ParseWithValuesFromMap2(t *testing.T) {
-	sqlT := pkg.NewQueryTemplateEngine(pkg.WithTemplateFunctions(template.FuncMap{}))
+func TestTemplateEngine_ParseWithValuesFromMap2(t *testing.T) {
+	sqlT := pkg.NewTemplateEngine(pkg.WithTemplateFunctions(template.FuncMap{}))
 
 	if err := sqlT.Register("users", fs, ".tsql"); err != nil {
-		t.Fatal()
+		t.Fatal(err)
 	}
 
-	template, err := sqlT.ParseWithValuesFromMap("users", "multipleBinds", getExtendedCriteria())
-	assert.Nil(t, err)
-
-	assert.Equal(t, getExpectedExtendedQuery(false), template.GetQuery())
-
-	testExtendedParams(t, template.GetParams())
+	query, params, criteria, err := parseWithValuesFromMap(sqlT)
+	require.Nil(t, err)
+	assert.Equal(t, getExpectedExtendedQuery(false), query)
+	testExtendedParams(t, params, criteria)
 }
 
-func TestQueryTemplateEngine_ParseWithValuesFromMapCustomPlaceholder(t *testing.T) {
+func parseWithValuesFromMap(sqlT pkg.TemplateEngine) (query string, params []any, criteria map[string]any, err error) {
+	criteria = getExtendedCriteria(50)
+	template, err := sqlT.ParseWithValuesFromMap("users", "multipleBinds", criteria)
+	query = template.GetQuery()
+	params = template.GetParams()
+
+	return
+}
+
+var pQuery string
+var pParams []any
+
+func TestTemplateEngine_ParseWithValuesFromMapConcurrent(t *testing.T) {
+	sqlT := pkg.NewTemplateEngine(pkg.WithTemplateFunctions(template.FuncMap{}))
+
+	if err := sqlT.Register("users", fs, ".tsql"); err != nil {
+		t.Fatal(err)
+	}
+
+	start := time.Now()
+	for i := int64(0); i < 100; i++ {
+		myRand := rand.New(rand.NewSource(i - time.Now().UnixNano()))
+		go func(j int64) {
+			for time.Since(start) < time.Second {
+				time.Sleep(time.Duration(myRand.Intn(40)))
+
+				query, params, criteria, err := parseWithValuesFromMap(sqlT)
+				require.Nil(t, err)
+				assert.Equal(t, getExpectedExtendedQuery(false), query)
+				testExtendedParams(t, params, criteria)
+			}
+		}(i)
+	}
+
+	for time.Since(start) < time.Second {
+		query, params, criteria, err := parseWithValuesFromMap(sqlT)
+		require.Nil(t, err)
+		assert.Equal(t, getExpectedExtendedQuery(false), query)
+		testExtendedParams(t, params, criteria)
+	}
+}
+
+func BenchmarkTemplateEngine_ParseWithValuesFromMap(b *testing.B) {
+	sqlT := pkg.NewTemplateEngine(pkg.WithTemplateFunctions(template.FuncMap{}))
+
+	if err := sqlT.Register("users", fs, ".tsql"); err != nil {
+		b.Fatal(err)
+	}
+
+	for i := 0; i < b.N; i++ {
+		query, params, _, _ := parseWithValuesFromMap(sqlT)
+
+		// always store the result to a package level variable
+		// so the compiler cannot eliminate the Benchmark itself.
+		pQuery = query
+		pParams = params
+	}
+}
+
+func TestTemplateEngine_ParseWithValuesFromMapCustomPlaceholder(t *testing.T) {
 	pgPlaceholder := func(_ any, index int) string { return fmt.Sprintf("$%d", index+1) }
 
-	sqlT := pkg.NewQueryTemplateEngine(pkg.WithPlaceholderFunc(pgPlaceholder))
+	sqlT := pkg.NewTemplateEngine(pkg.WithPlaceholderFunc(pgPlaceholder))
 
 	if err := sqlT.Register("users", fs, ".tsql"); err != nil {
 		t.Fatal()
 	}
 
-	template, err := sqlT.ParseWithValuesFromMap("users", "multipleBinds", getExtendedCriteria())
+	query, params, criteria, err := parseWithValuesFromMap(sqlT)
 	require.Nil(t, err)
-
-	assert.Equal(t, getExpectedExtendedQuery(true), template.GetQuery(), "expected query failed")
-	testExtendedParams(t, template.GetParams())
+	assert.Equal(t, getExpectedExtendedQuery(true), query)
+	testExtendedParams(t, params, criteria)
 }
 
-func TestQueryTemplateEngine_ParseWithValuesFromMapCustomBindingEngine(t *testing.T) {
+func TestTemplateEngine_ParseWithValuesFromMapCustomiBndingEngine(t *testing.T) {
 	pgPlaceholder := func(_ any, index int) string { return fmt.Sprintf("$%d", index+1) }
 	bindingEninge := pkg.NewBindingEngine()
 	bindingEninge.SetPlaceholderFunc(pgPlaceholder)
-	sqlT := pkg.NewQueryTemplateEngine(pkg.WithBindingEngine(bindingEninge))
+	sqlT := pkg.NewTemplateEngine(pkg.WithBindingEngine(bindingEninge))
 
 	if err := sqlT.Register("users", fs, ".tsql"); err != nil {
 		t.Fatal()
 	}
 
-	template, err := sqlT.ParseWithValuesFromMap("users", "multipleBinds", getExtendedCriteria())
+	query, params, criteria, err := parseWithValuesFromMap(sqlT)
 	require.Nil(t, err)
-
-	assert.Equal(t, getExpectedExtendedQuery(true), template.GetQuery(), "expected query failed")
-	testExtendedParams(t, template.GetParams())
+	assert.Equal(t, getExpectedExtendedQuery(true), query)
+	testExtendedParams(t, params, criteria)
 }
